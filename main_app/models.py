@@ -34,3 +34,28 @@ class User(AbstractUser, PermissionsMixin):
 
   USERNAME_FIELD = 'email'
   REQUIRED_FIELDS = ['username', 'role']
+
+class Course(models.Model):
+  title = models.CharField(max_length=100)
+  teacher = models.OneToOneField(User, on_delete=models.CASCADE, limit_choices_to={'role': 'teacher'})
+  student = models.ManyToManyField(User, related_name='courses', limit_choices_to={'role': 'student'})
+  
+  def __str__(self):
+    return self.title
+  
+class Record(models.Model):
+  student = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': 'student'})
+  course = models.ForeignKey(Course, on_delete=models.CASCADE)
+
+  # Grades
+  mid = models.FloatField()
+  assessment = models.FloatField()
+  final = models.FloatField()
+  #others
+  attendance = models.IntegerField() 
+  remarks = models.TextField(blank=True)
+  
+  created_at = models.DateTimeField(auto_now_add=True)
+
+  def __str__(self):
+    return f"{self.student.username} -- {self.course.title}"
