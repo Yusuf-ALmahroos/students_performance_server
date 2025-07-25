@@ -1,5 +1,5 @@
 run: 
-	python manage.py
+	python manage.py runserver
 
 migs: 
 	python manage.py makemigrations

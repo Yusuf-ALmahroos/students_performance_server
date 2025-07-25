@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-class RegisterSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
   confirm_password = serializers.CharField(write_only=True)
 
   class Meta: 
@@ -28,3 +28,25 @@ class RegisterSerializer(serializers.ModelSerializer):
         password=validated_data['password']
     )
     return user
+  
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+class TokenPairSerializer(TokenObtainPairSerializer):
+  username_field = User.EMAIL_FIELD
+
+  @classmethod
+  def get_token(self, user):
+    token = super().get_token(user)
+    token['email'] = user.email
+    token['role'] = user.role
+    return token
+  
+  def validate(self, params):
+    data = super().validate(params)
+    data['user'] = {
+      'email': self.user.email,
+      'username': self.user.username,
+      'role': self.user.role,
+    }
+    return data
+  
