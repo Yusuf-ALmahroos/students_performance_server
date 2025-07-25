@@ -3,9 +3,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework import viewsets
 
-
-from .serializers import UserSerializer, TokenPairSerializer
+from .serializers import UserSerializer, TokenPairSerializer, CourseSerializer, RecordSerializer
+from .models import Course, Record
 
 class RegisterView(APIView):
   def post(self, request):
@@ -18,3 +19,11 @@ class RegisterView(APIView):
 
 class LoginView(TokenObtainPairView):
   serializer_class = TokenPairSerializer
+
+class CourseViewSet(viewsets.ModelViewSet):
+  queryset = Course.objects.all()
+  serializer_class = CourseSerializer
+
+class RecordViewSet(viewsets.ModelViewSet):
+  queryset = Record.objects.all()
+  serializer_class = RecordSerializer

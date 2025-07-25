@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User
+from .models import User, Course, Record
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -50,3 +50,14 @@ class TokenPairSerializer(TokenObtainPairSerializer):
     }
     return data
   
+class CourseSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = Course
+    fields = '__all__'
+    read_only_fields = ['id']
+
+class RecordSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = Record
+    fields = '__all__'
+    read_only_fields = ['id', 'created_at']
