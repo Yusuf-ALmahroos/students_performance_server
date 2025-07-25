@@ -2,7 +2,7 @@ run:
 	python manage.py
 
 migs: 
-	python manage.py migrations
+	python manage.py makemigrations
 
 mig:
 	python manage.py migrate
