@@ -50,14 +50,43 @@ class TokenPairSerializer(TokenObtainPairSerializer):
     }
     return data
   
-class CourseSerializer(serializers.ModelSerializer):
-  class Meta:
-    model = Course
-    fields = '__all__'
-    read_only_fields = ['id']
-
 class RecordSerializer(serializers.ModelSerializer):
   class Meta:
     model = Record
     fields = '__all__'
-    read_only_fields = ['id', 'created_at']
+    read_only_fields = ['id', 'created_at', 'student', 'course']
+
+class StudentWithRecordSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+    records = RecordSerializer(write_only = True)
+  
+class CourseSerializer(serializers.ModelSerializer):
+  students = StudentWithRecordSerializer(many=True)
+  class Meta:
+    model = Course
+    fields = '__all__'
+    read_only_fields = ['id','teacher']
+
+  def create(self, validated_data):
+    students_data = validated_data.pop('students')
+    course = Course.objects.create(**validated_data)
+
+    for student_data in students_data:
+      record_data = student_data.pop('records')
+      student, created = User.objects.get_or_create(
+        email=student_data['email'],
+        defaults={
+          'username': student_data['username'],
+          'role': 'student',
+          'password': student_data['password']
+        }
+      )
+      course.students.add(student)
+      Record.objects.create(
+        student=student,
+        course=course,
+        **record_data
+      )
+    return course

@@ -37,8 +37,13 @@ class User(AbstractUser, PermissionsMixin):
 
 class Course(models.Model):
   title = models.CharField(max_length=100)
-  teacher = models.OneToOneField(User, on_delete=models.CASCADE, limit_choices_to={'role': 'teacher'})
-  student = models.ManyToManyField(User, related_name='courses', limit_choices_to={'role': 'student'})
+  teacher = models.ForeignKey(
+    User,
+    on_delete=models.CASCADE,
+    related_name='teacher_courses',
+    limit_choices_to={'role': 'teacher'}
+)
+  students = models.ManyToManyField(User, related_name='enrolled_courses', limit_choices_to={'role': 'student'})
   
   def __str__(self):
     return self.title
