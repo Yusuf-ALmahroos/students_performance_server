@@ -56,6 +56,20 @@ class RecordSerializer(serializers.ModelSerializer):
     fields = '__all__'
     read_only_fields = ['id', 'created_at', 'student', 'course']
 
+  def create(self, validated_data):
+
+    student_name = validated_data.pop('student')
+    course_name = validated_data.pop('course')
+
+    student = User.objects.get(username=student_name)
+    course = Course.objects.get(title=course_name)
+    record = Record.objects.create(
+      student=student,
+      course=course,
+      **validated_data
+    )
+    return record
+
 class StudentWithRecordSerializer(serializers.Serializer):
     username = serializers.CharField()
     email = serializers.EmailField()
@@ -75,7 +89,7 @@ class CourseSerializer(serializers.ModelSerializer):
 
     for student_data in students_data:
       record_data = student_data.pop('records')
-      student, created = User.objects.get_or_create(
+      student = User.objects.get_or_create(
         email=student_data['email'],
         defaults={
           'username': student_data['username'],

@@ -43,7 +43,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 class CourseViewSet(viewsets.ModelViewSet):
   queryset = Course.objects.all()
   serializer_class = CourseSerializer
-  #permission_classes = [IsAuthenticated]
+  permission_classes = [IsAuthenticated]
 
   def perform_create(self, serializer):
     user = self.request.user
@@ -72,10 +72,16 @@ class CourseViewSet(viewsets.ModelViewSet):
 class RecordViewSet(viewsets.ModelViewSet):
   queryset = Record.objects.all()
   serializer_class = RecordSerializer
-  #permission_classes = [IsAuthenticated]
+  permission_classes = [IsAuthenticated]
 
+  def perform_create(self, serializer):
+    user = self.request.user
+    if user.role != 'teacher':
+      raise PermissionDenied("Only teachers can add records.")
+  
   @action(detail=False, methods=['get'])
   def student_record(self, request):
-    student_records = self.get_queryset().filter(student=request.data.get('student_id'))
+    student = User.objects.get(username=request.data.get('student_name'))
+    student_records = self.get_queryset().filter(student=student.id)
     serializer = self.get_serializer(student_records, many=True)
     return Response(serializer.data)
