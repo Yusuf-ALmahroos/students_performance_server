@@ -49,26 +49,13 @@ class TokenPairSerializer(TokenObtainPairSerializer):
       'role': self.user.role,
     }
     return data
-  
+
+
 class RecordSerializer(serializers.ModelSerializer):
   class Meta:
     model = Record
     fields = '__all__'
     read_only_fields = ['id', 'created_at', 'student', 'course']
-
-  def create(self, validated_data):
-
-    student_name = validated_data.pop('student')
-    course_name = validated_data.pop('course')
-
-    student = User.objects.get(username=student_name)
-    course = Course.objects.get(title=course_name)
-    record = Record.objects.create(
-      student=student,
-      course=course,
-      **validated_data
-    )
-    return record
 
 class StudentWithRecordSerializer(serializers.Serializer):
     username = serializers.CharField()

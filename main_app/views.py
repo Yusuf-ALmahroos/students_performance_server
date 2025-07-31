@@ -74,10 +74,29 @@ class RecordViewSet(viewsets.ModelViewSet):
   serializer_class = RecordSerializer
   permission_classes = [IsAuthenticated]
 
-  def perform_create(self, serializer):
+
+  @action(detail=False, methods=['POST'])
+  def add_record(self, request):
     user = self.request.user
     if user.role != 'teacher':
       raise PermissionDenied("Only teachers can add records.")
+    
+    student_name = request.data.get('student')
+    course_name = request.data.get('course')
+    print("-------------")
+    print(request.data)
+    print("-------------")
+    student = User.objects.get(username=student_name)
+    course = Course.objects.get(title=course_name)
+    record = Record.objects.create(
+    student=student,
+    course=course,
+    mid=request.data['mid'], 
+    assessment=request.data['assessment'], 
+    final=request.data['final'], 
+    attendance=request.data['attendance'], 
+    remarks=request.data['remarks'])
+    return Response({'message': 'added record successfully'}, status=status.HTTP_200_OK)
   
   @action(detail=False, methods=['get'])
   def student_record(self, request):
