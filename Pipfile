@@ -8,7 +8,8 @@ django = "*"
 djangorestframework = "*"
 python-dotenv = "*"
 psycopg2-binary = "*"
-djangorestframework-simplejwt = "*"
+django-cors-headers = "*"
+djangorestframework-simplejwt = {extras = ["blacklist"], version = "*"}
 
 [dev-packages]
 

@@ -6,11 +6,14 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .serializers import UserSerializer, TokenPairSerializer, CourseSerializer, RecordSerializer
 from .models import Course, Record, User
 
 class RegisterView(APIView):
+  authentication_classes = []
+  permission_classes = [AllowAny]
   def post(self, request):
     serializer = UserSerializer(data = request.data)
     if(serializer.is_valid()): 
@@ -21,6 +24,17 @@ class RegisterView(APIView):
 
 class LoginView(TokenObtainPairView):
   serializer_class = TokenPairSerializer
+
+class LogoutView(APIView):
+  permission_classes = [IsAuthenticated]
+  def post(self, request):
+    try:
+        refresh_token = request.data["refresh"]
+        token = RefreshToken(refresh_token)
+        token.blacklist()
+        return Response({"message": "Logged out successfully"})
+    except Exception:
+        return Response({"error": "Invalid refresh token"}, status=400)
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
   queryset = User.objects.all()
