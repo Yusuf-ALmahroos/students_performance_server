@@ -11,6 +11,7 @@ psycopg2-binary = "*"
 django-cors-headers = "*"
 djangorestframework-simplejwt = {extras = ["blacklist"], version = "*"}
 gunicorn = "*"
+dj-database-url = "*"
 
 [dev-packages]
 
