@@ -84,10 +84,10 @@ WSGI_APPLICATION = 'students_preformance.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME':'students_performance',  # Name of your PostgreSQL database
+        'NAME': os.getenv('DATABASE_NAME'),  # Name of your PostgreSQL database
         'USER': os.getenv("DATABASE_USER"), 
         'PASSWORD': os.getenv("DATABASE_PASSWORD"), 
-        'PORT': '5432',
+        'PORT': os.getenv('DATABASE_PORT'),
     }
 
 }
