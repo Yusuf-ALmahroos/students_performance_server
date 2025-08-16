@@ -1,6 +1,6 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
-from .views import RegisterView, LoginView, CourseViewSet, RecordViewSet, UserViewSet
+from .views import RegisterView, LoginView, CourseViewSet, RecordViewSet, UserViewSet, LogoutView
 
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -20,6 +20,7 @@ urlpatterns = [
     #auth endpoints
     path('auth/register/', RegisterView.as_view(), name='register'),
     path('auth/login/', LoginView.as_view(), name='login'),
+    path('auth/logout/', LogoutView.as_view(), name='logout'),
     #course and record endpoints
     path('', include(router.urls))
 ]

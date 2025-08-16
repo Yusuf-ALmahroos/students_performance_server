@@ -8,7 +8,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .serializers import UserSerializer, TokenPairSerializer, CourseSerializer, RecordSerializer
+from .serializers import UserSerializer, TokenPairSerializer, CourseSerializer, RecordSerializer, StudentCourseSerializer
 from .models import Course, Record, User
 
 class RegisterView(APIView):
@@ -26,7 +26,7 @@ class LoginView(TokenObtainPairView):
   serializer_class = TokenPairSerializer
 
 class LogoutView(APIView):
-  permission_classes = [IsAuthenticated]
+  
   def post(self, request):
     try:
         refresh_token = request.data["refresh"]
@@ -59,7 +59,20 @@ class CourseViewSet(viewsets.ModelViewSet):
   serializer_class = CourseSerializer
   permission_classes = [IsAuthenticated]
 
+  def create(self, request, *args, **kwargs):
+    serializer = self.get_serializer(data=request.data)
+    try:
+        serializer.is_valid(raise_exception=True)
+    except Exception as e:
+        print("Validation failed!")
+        print(serializer.errors)
+        raise e
+    self.perform_create(serializer)
+    headers = self.get_success_headers(serializer.data)
+    return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+  
   def perform_create(self, serializer):
+    print("Serializer validated data:", serializer.validated_data)
     user = self.request.user
     if user.role != 'teacher':
       raise PermissionDenied("Only teachers can create courses.")
@@ -82,7 +95,28 @@ class CourseViewSet(viewsets.ModelViewSet):
     for student in request.data.students:
       print(student.id)
 
-
+  @action(detail=False, methods=['get'], url_path='by-teacher')
+  def get_courses_by_teacher(self, request):
+      if request.user.role != 'teacher':
+          return Response(
+              {"error": "Only teachers can view their courses."},
+              status=status.HTTP_403_FORBIDDEN
+          )
+      courses = Course.objects.filter(teacher=request.user)
+      serializer = CourseSerializer(courses, many=True)
+      return Response(serializer.data, status=status.HTTP_200_OK)
+      
+  @action(detail=False, methods=['get'], url_path='by-student')
+  def get_courses_by_student(self, request):
+      if request.user.role != 'student':
+          return Response(
+              {"error": "Only students can view their courses."},
+              status=status.HTTP_403_FORBIDDEN
+          )
+      courses = Course.objects.filter(students=request.user)
+      serializer = StudentCourseSerializer(courses, many=True, context={'request': request})
+      return Response(serializer.data, status=status.HTTP_200_OK)
+  
 class RecordViewSet(viewsets.ModelViewSet):
   queryset = Record.objects.all()
   serializer_class = RecordSerializer
@@ -118,3 +152,4 @@ class RecordViewSet(viewsets.ModelViewSet):
     student_records = self.get_queryset().filter(student=student.id)
     serializer = self.get_serializer(student_records, many=True)
     return Response(serializer.data)
+  
